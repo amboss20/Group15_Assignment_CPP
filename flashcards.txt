@@ -1,18 +1,21 @@
+What pet has whiskers?
+cat
+2
 What is a Class in C++?
 A user-defined blueprint or template used to create objects.
-0
-What are the four core pillars of OOP?
-Encapsulation, Inheritance, Polymorphism, and Abstraction.
-0
-What is the purpose of a constructor?
-To automatically initialize an object's variables when it is created.
-1
-What keyword is used to hide data from outside the class?
-private
 2
 What does Polymorphism mean?
 The ability of different objects to respond to the same function call in their own way.
-0
+2
+What are the four core pillars of OOP?
+Encapsulation, Inheritance, Polymorphism, and Abstraction.
+2
+What is the purpose of a constructor?
+To automatically initialize an object's variables when it is created.
+2
+What keyword is used to hide data from outside the class?
+private
+2
 What is the difference between a class and an object?
 A class is the blueprint, while an object is a real instance of that blueprint.
-1
+2
