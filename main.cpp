@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
-#include <vector>
-#include <fstream>
-using namespace std;
+#include <vector>   
+#include <fstream>  
 
 using namespace std;
+
 
 void print(string str) {
     cout << str << endl;
@@ -29,7 +29,7 @@ public:
         getline(cin, answer);
     }
 
-    // HELPER ADDITION: This lets the FileManager load data from a file directly
+    // Helper function so FileManager can load data directly without using cin
     void loadCardDetails(string q, string a, int s) {
         question = q;
         answer = a;
@@ -66,22 +66,77 @@ public:
     }
 };
 
-class Deck{
-
+class StudySession {
 private:
-vector<FlashCard> cards;
+    FlashCard *card;  // Aggregation via pointer
 
 public:
+    StudySession(FlashCard *c) { card = c; }
 
-void addNewCard(){
-FlashCard newCard;
+    void showCard() {
+        cout << "Question: " << card->getQuestion() << endl;
+        cout << endl;
+        cout << "Press ENTER to reveal answer...";
+        cin.ignore(); // Pauses and waits for the user to hit Enter
+        cout << "Answer: " << card->getAnswer() << endl;
+        cout << endl;
+    }
+
+    void recordFeedback() {
+        int feedback = 0;
+        cout << "Did you get it right?" << endl;
+        cout << "1. Yes (Easy)" << endl;
+        cout << "2. No  (Hard)" << endl;
+        cout << "Enter choice: ";
+        cin >> feedback;
+        cin.ignore(); // Clean buffer after reading integer
+
+        if (feedback == 1) {
+            card->increaseScore();
+            cout << "Great! Score increased to " << card->getScore() << "." << endl;
+        } else {
+            card->decreaseScore();
+            cout << "No worries! Score decreased to " << card->getScore() << "." << endl;
+        }
+    }
+
+    void selectNextCard() {
+        cout << endl;
+        if (card->getScore() <= 2) {
+            cout << "[Spaced Repetition] Score is low (" << card->getScore()
+                 << ") this card will appear again SOON." << endl;
+        } else {
+            cout << "[Spaced Repetition] Score is good (" << card->getScore()
+                 << ") this card will appear LATER." << endl;
+        }
+    }
+
+    void startSession() {
+        cout << endl;
+        cout << "---------------------------------" << endl;
+        cout << "         REVIEW CARD             " << endl;
+        cout << "---------------------------------" << endl;
+
+        showCard();
+        recordFeedback();
+        selectNextCard();
+    }
+};
+
+class Deck {
+private:
+    vector<FlashCard> cards; // Dynamic array to hold flashcards
+
+public:
+    void addNewCard() {
+        FlashCard newCard;
         newCard.setQuestion();
         newCard.setAnswer();
         cards.push_back(newCard);
         print("Card added successfully!");
-}
+    }
 
-   vector<FlashCard>& getCards() {
+    vector<FlashCard>& getCards() {
         return cards;
     }
 
@@ -89,10 +144,10 @@ FlashCard newCard;
         cards.clear();
     }
 
-    
+    // Traditional Quick Quiz
     void playQuiz() {
         if (cards.empty()) {
-            print("The deck is empty!");
+            print("The deck is empty! Add some cards first.");
             return;
         }
 
@@ -114,8 +169,20 @@ FlashCard newCard;
             tracker.progress();
         }
     }
-};
 
+    void playSpacedRepetition() {
+        if (cards.empty()) {
+            print("The deck is empty! Add some cards first.");
+            return;
+        }
+
+        for (size_t i = 0; i < cards.size(); i++) {
+            
+            StudySession session(&cards[i]); 
+            session.startSession();
+        }
+    }
+};
 
 class FileManager {
 public:
@@ -150,7 +217,7 @@ public:
 
         string qLines, aLines, scoreLines;
         while (getline(inFile, qLines) && getline(inFile, aLines) && getline(inFile, scoreLines)) {
-            int savedScore = stoi(scoreLines); // Convert text score to integer
+            int savedScore = stoi(scoreLines); 
 
             FlashCard loadedCard;
             loadedCard.loadCardDetails(qLines, aLines, savedScore);
@@ -166,23 +233,24 @@ int main() {
     Deck myDeck;
     string filename = "flashcards.txt";
 
-    // 1. Load saved cards at startup
+    // Load saved cards at startup
     FileManager::loadFromFile(myDeck, filename);
 
     int choice = 0;
 
-    // 2. Menu Loop
-    while (choice != 3) {
+    
+    while (choice != 4) {
         cout << "\n=========================" << endl;
         cout << "    FLASHCARD PROGRAM    " << endl;
         cout << "=========================" << endl;
         cout << "1. Add a New Flashcard" << endl;
-        cout << "2. Play the Quiz" << endl;
-        cout << "3. Save and Exit" << endl;
-        cout << "Enter your choice (1-3): ";
+        cout << "2. Play Quick Quiz" << endl;
+        cout << "3. Play Spaced Repetition Study" << endl;
+        cout << "4. Save and Exit" << endl;
+        cout << "Enter your choice (1-4): ";
         cin >> choice;
 
-        cin.ignore(); // Clears the Enter key buffer so getline() works safely
+        cin.ignore();
 
         switch (choice) {
             case 1:
@@ -195,13 +263,17 @@ int main() {
                 break;
 
             case 3:
+                myDeck.playSpacedRepetition(); // SRS
+                break;
+
+            case 4:
                 cout << "\nSaving your deck..." << endl;
                 FileManager::saveToFile(myDeck, filename);
-                cout << "Goodbye! Good luck with your assignment." << endl;
+                cout << "Goodbye! Great job on your code expansion." << endl;
                 break;
 
             default:
-                cout << "Invalid selection. Please type 1, 2, or 3." << endl;
+                cout << "Invalid selection. Please type 1, 2, 3, or 4." << endl;
                 break;
         }
     }
