@@ -1,22 +1,16 @@
 #include <iostream>
 #include <string>
-#include <vector>   // For holding the list of cards
-#include <fstream>  // For file operations (ifstream, ofstream)
+#include <vector>   
+#include <fstream>  
 
 using namespace std;
 
-// ==========================================
-// GLOBALS & ENUMS
-// ==========================================
 enum Difficulty { HARD = 0, MEDIUM = 1, EASY = 2 };
 
 void print(string str) {
     cout << str << endl;
 }
 
-// ==========================================
-// 1. FLASHCARD CLASS
-// ==========================================
 class FlashCard {
 private:
     string question;
@@ -36,7 +30,6 @@ public:
         getline(cin, answer);
     }
 
-    // HELPER ADDITION: Allows FileManager to load data directly from the text file
     void loadCardDetails(string q, string a, Difficulty d) {
         question = q;
         answer = a;
@@ -56,9 +49,6 @@ public:
     }
 };
 
-// ==========================================
-// 2. USER PROGRESS CLASS
-// ==========================================
 class UserProgress {
 private:
     FlashCard *card;  // Aggregation
@@ -74,9 +64,6 @@ public:
     }
 };
 
-// ==========================================
-// 3. STUDY SESSION CLASS
-// ==========================================
 class StudySession {
 private:
     FlashCard *card;  // Aggregation
@@ -141,9 +128,6 @@ public:
     }
 };
 
-// ==========================================
-// 4. DECK CLASS (Clean data management only)
-// ==========================================
 class Deck {
 private:
     vector<FlashCard> cards; // Dynamic array to hold flashcards
@@ -166,9 +150,6 @@ public:
     }
 };
 
-// ==========================================
-// 5. FILE MANAGER CLASS
-// ==========================================
 class FileManager {
 public:
     static void saveToFile(Deck& deck, string filename) {
@@ -183,7 +164,6 @@ public:
         for (size_t i = 0; i < cards.size(); i++) {
             outFile << cards[i].getQuestion() << endl;
             outFile << cards[i].getAnswer() << endl;
-            // Enums are fundamentally integers, so we save it as 0, 1, or 2
             outFile << static_cast<int>(cards[i].getDifficulty()) << endl;
         }
 
@@ -217,9 +197,6 @@ public:
     }
 };
 
-// ==========================================
-// 6. MAIN FUNCTION
-// ==========================================
 int main() {
     Deck myDeck;
     string filename = "flashcards.txt";
@@ -255,7 +232,7 @@ int main() {
             if (cards.empty()) {
                 print("The deck is empty! Add some cards first.");
             } else {
-                // Instantiates a study session for every card in the deck collection
+                
                 for (size_t i = 0; i < cards.size(); i++) {
                     StudySession session(&cards[i]);
                     session.startSession();
@@ -268,7 +245,7 @@ int main() {
             if (cards.empty()) {
                 print("The deck is empty! No progress to show.");
             } else {
-                // Instantiates a progress tracker display for every card
+                
                 for (size_t i = 0; i < cards.size(); i++) {
                     UserProgress track(&cards[i]);
                     track.progress();
