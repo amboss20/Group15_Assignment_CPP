@@ -1,23 +1,30 @@
 #include <iostream>
 #include <string>
-#include <vector>   
-#include <fstream>  
+#include <vector>   // For holding the list of cards
+#include <fstream>  // For file operations (ifstream, ofstream)
 
 using namespace std;
 
+// ==========================================
+// GLOBALS & ENUMS
+// ==========================================
+enum Difficulty { HARD = 0, MEDIUM = 1, EASY = 2 };
 
 void print(string str) {
     cout << str << endl;
 }
 
+// ==========================================
+// 1. FLASHCARD CLASS
+// ==========================================
 class FlashCard {
 private:
     string question;
     string answer;
-    int score;
+    Difficulty difficulty;
 
 public:
-    FlashCard() { score = 0; }
+    FlashCard() { difficulty = MEDIUM; }  
 
     void setQuestion() {
         cout << "Add a question: ";
@@ -29,46 +36,50 @@ public:
         getline(cin, answer);
     }
 
-    // Helper function so FileManager can load data directly without using cin
-    void loadCardDetails(string q, string a, int s) {
+    // HELPER ADDITION: Allows FileManager to load data directly from the text file
+    void loadCardDetails(string q, string a, Difficulty d) {
         question = q;
         answer = a;
-        score = s;
+        difficulty = d;
     }
 
-    string getQuestion() { return question; }
-    string getAnswer() { return answer; }
-    int getScore() { return score; }
+    string getQuestion()       { return question; }
+    string getAnswer()         { return answer; }
+    Difficulty getDifficulty() { return difficulty; }
 
-    int increaseScore() {
-        score++;
-        return score;
-    }
+    void setDifficulty(Difficulty d) { difficulty = d; }
 
-    int decreaseScore() {
-        score--;
-        return score;
+    string getDifficultyLabel() {
+        if (difficulty == HARD)   return "Hard";
+        if (difficulty == MEDIUM) return "Medium";
+        return "Easy";
     }
 };
 
+// ==========================================
+// 2. USER PROGRESS CLASS
+// ==========================================
 class UserProgress {
 private:
-    FlashCard *card;
+    FlashCard *card;  // Aggregation
 
 public:
     UserProgress(FlashCard *c) { card = c; }
 
     void progress() {
         cout << "User Progress:" << endl;
-        cout << "Question: " << card->getQuestion() << endl;
-        cout << "Point: " << card->getScore() << endl;
+        cout << "Question:   " << card->getQuestion() << endl;
+        cout << "Difficulty: " << card->getDifficultyLabel() << endl;
         cout << endl;
     }
 };
 
+// ==========================================
+// 3. STUDY SESSION CLASS
+// ==========================================
 class StudySession {
 private:
-    FlashCard *card;  // Aggregation via pointer
+    FlashCard *card;  // Aggregation
 
 public:
     StudySession(FlashCard *c) { card = c; }
@@ -84,37 +95,44 @@ public:
 
     void recordFeedback() {
         int feedback = 0;
-        cout << "Did you get it right?" << endl;
-        cout << "1. Yes (Easy)" << endl;
-        cout << "2. No  (Hard)" << endl;
+        cout << "How difficult was this card?" << endl;
+        cout << "1. Hard   (will appear first next time)"  << endl;
+        cout << "2. Medium (will appear in the middle)"    << endl;
+        cout << "3. Easy   (will appear last next time)"   << endl;
         cout << "Enter choice: ";
         cin >> feedback;
         cin.ignore(); // Clean buffer after reading integer
 
         if (feedback == 1) {
-            card->increaseScore();
-            cout << "Great! Score increased to " << card->getScore() << "." << endl;
+            card->setDifficulty(HARD);
+            cout << "Marked as Hard. This card will appear first." << endl;
+        } else if (feedback == 2) {
+            card->setDifficulty(MEDIUM);
+            cout << "Marked as Medium. This card will appear in the middle." << endl;
+        } else if (feedback == 3) {
+            card->setDifficulty(EASY);
+            cout << "Marked as Easy. This card will appear last." << endl;
         } else {
-            card->decreaseScore();
-            cout << "No worries! Score decreased to " << card->getScore() << "." << endl;
+            cout << "Invalid input. Difficulty unchanged." << endl;
         }
     }
 
     void selectNextCard() {
         cout << endl;
-        if (card->getScore() <= 2) {
-            cout << "[Spaced Repetition] Score is low (" << card->getScore()
-                 << ") this card will appear again SOON." << endl;
+        Difficulty d = card->getDifficulty();
+        if (d == HARD) {
+            cout << "[Review Order] Marked HARD so this card appears at the front." << endl;
+        } else if (d == MEDIUM) {
+            cout << "[Review Order] Marked MEDIUM so this card appears in the middle." << endl;
         } else {
-            cout << "[Spaced Repetition] Score is good (" << card->getScore()
-                 << ") this card will appear LATER." << endl;
+            cout << "[Review Order] Marked EASY so this card appears at the back." << endl;
         }
     }
 
     void startSession() {
         cout << endl;
         cout << "---------------------------------" << endl;
-        cout << "         REVIEW CARD             " << endl;
+        cout << "         REVIEW SESSION          " << endl;
         cout << "---------------------------------" << endl;
 
         showCard();
@@ -123,6 +141,9 @@ public:
     }
 };
 
+// ==========================================
+// 4. DECK CLASS (Clean data management only)
+// ==========================================
 class Deck {
 private:
     vector<FlashCard> cards; // Dynamic array to hold flashcards
@@ -143,47 +164,11 @@ public:
     void clearDeck() {
         cards.clear();
     }
-
-    // Traditional Quick Quiz
-    void playQuiz() {
-        if (cards.empty()) {
-            print("The deck is empty! Add some cards first.");
-            return;
-        }
-
-        string userAnswer;
-        for (size_t i = 0; i < cards.size(); i++) {
-            cout << "\nQuestion: " << cards[i].getQuestion() << endl;
-            cout << "Your Answer: ";
-            getline(cin, userAnswer);
-
-            if (userAnswer == cards[i].getAnswer()) {
-                print("Correct!");
-                cards[i].increaseScore();
-            } else {
-                print("Wrong! The right answer was: " + cards[i].getAnswer());
-                cards[i].decreaseScore();
-            }
-
-            UserProgress tracker(&cards[i]);
-            tracker.progress();
-        }
-    }
-
-    void playSpacedRepetition() {
-        if (cards.empty()) {
-            print("The deck is empty! Add some cards first.");
-            return;
-        }
-
-        for (size_t i = 0; i < cards.size(); i++) {
-            
-            StudySession session(&cards[i]); 
-            session.startSession();
-        }
-    }
 };
 
+// ==========================================
+// 5. FILE MANAGER CLASS
+// ==========================================
 class FileManager {
 public:
     static void saveToFile(Deck& deck, string filename) {
@@ -198,7 +183,8 @@ public:
         for (size_t i = 0; i < cards.size(); i++) {
             outFile << cards[i].getQuestion() << endl;
             outFile << cards[i].getAnswer() << endl;
-            outFile << cards[i].getScore() << endl;
+            // Enums are fundamentally integers, so we save it as 0, 1, or 2
+            outFile << static_cast<int>(cards[i].getDifficulty()) << endl;
         }
 
         outFile.close();
@@ -215,12 +201,14 @@ public:
 
         deck.clearDeck();
 
-        string qLines, aLines, scoreLines;
-        while (getline(inFile, qLines) && getline(inFile, aLines) && getline(inFile, scoreLines)) {
-            int savedScore = stoi(scoreLines); 
+        string qLines, aLines, diffLines;
+        while (getline(inFile, qLines) && getline(inFile, aLines) && getline(inFile, diffLines)) {
+            // Read the integer string from the file and turn it back into the Enum type
+            int diffValue = stoi(diffLines); 
+            Difficulty savedDifficulty = static_cast<Difficulty>(diffValue);
 
             FlashCard loadedCard;
-            loadedCard.loadCardDetails(qLines, aLines, savedScore);
+            loadedCard.loadCardDetails(qLines, aLines, savedDifficulty);
             deck.getCards().push_back(loadedCard);
         }
 
@@ -229,54 +217,75 @@ public:
     }
 };
 
+// ==========================================
+// 6. MAIN FUNCTION
+// ==========================================
 int main() {
     Deck myDeck;
     string filename = "flashcards.txt";
 
-    // Load saved cards at startup
+    // Load saved cards automatically at startup
     FileManager::loadFromFile(myDeck, filename);
 
     int choice = 0;
 
-    
-    while (choice != 4) {
-        cout << "\n=========================" << endl;
-        cout << "    FLASHCARD PROGRAM    " << endl;
-        cout << "=========================" << endl;
-        cout << "1. Add a New Flashcard" << endl;
-        cout << "2. Play Quick Quiz" << endl;
-        cout << "3. Play Spaced Repetition Study" << endl;
-        cout << "4. Save and Exit" << endl;
-        cout << "Enter your choice (1-4): ";
+    do {
+        cout << endl;
+        print("---------------------------------");
+        print("      FLASHCARD CONSOLE          ");
+        print("---------------------------------");
+        print("1. Add FlashCard");
+        print("2. Review Flashcards");
+        print("3. View Progress");
+        print("4. Save and Exit");
+        cout << endl;
+
+        cout << "Enter your choice (number): ";
         cin >> choice;
+        cin.ignore(); // Clears the input buffer so getline() doesn't skip
+        cout << endl;
 
-        cin.ignore();
-
-        switch (choice) {
-            case 1:
-                cout << "\n--- Creating a Card ---" << endl;
-                myDeck.addNewCard();
-                break;
-
-            case 2:
-                myDeck.playQuiz();
-                break;
-
-            case 3:
-                myDeck.playSpacedRepetition(); // SRS
-                break;
-
-            case 4:
-                cout << "\nSaving your deck..." << endl;
-                FileManager::saveToFile(myDeck, filename);
-                cout << "Goodbye! Great job on your code expansion." << endl;
-                break;
-
-            default:
-                cout << "Invalid selection. Please type 1, 2, 3, or 4." << endl;
-                break;
+        if (choice == 1) {
+            cout << "--- Creating a Card ---" << endl;
+            myDeck.addNewCard();
         }
-    }
+        else if (choice == 2) {
+            vector<FlashCard>& cards = myDeck.getCards();
+            
+            if (cards.empty()) {
+                print("The deck is empty! Add some cards first.");
+            } else {
+                // Instantiates a study session for every card in the deck collection
+                for (size_t i = 0; i < cards.size(); i++) {
+                    StudySession session(&cards[i]);
+                    session.startSession();
+                }
+            }
+        }
+        else if (choice == 3) {
+            vector<FlashCard>& cards = myDeck.getCards();
+            
+            if (cards.empty()) {
+                print("The deck is empty! No progress to show.");
+            } else {
+                // Instantiates a progress tracker display for every card
+                for (size_t i = 0; i < cards.size(); i++) {
+                    UserProgress track(&cards[i]);
+                    track.progress();
+                }
+            }
+        }
+        else if (choice == 4) {
+            cout << "Saving your deck..." << endl;
+            FileManager::saveToFile(myDeck, filename);
+            print("Goodbye!");
+            return 0;
+        }
+        else {
+            print("Invalid choice. Please select 1, 2, 3, or 4.");
+        }
+
+    } while (true);
 
     return 0;
 }
