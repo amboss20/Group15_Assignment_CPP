@@ -1,48 +1,69 @@
-#include <iostream>
-#include <string>
-#include <vector>   
-#include <fstream>  
+#include <iostream>  // Default library to run c++ program
+#include <string>    // String functionality
+#include <vector>    // Vector function (dynamic memory allocation)
+#include <fstream>   // File operation
 #include <algorithm> // Added for std::sort
 
 using namespace std;
 
+// Define difficulty level (for spaced repetition)
+// HARD --> card often appears again
+// MEDIUM --> appears moderately (default level)
+// EASY --> card appears occasionally
 enum Difficulty { HARD = 0, MEDIUM = 1, EASY = 2 };
 
+// Custom function (shortcut) to print with newline
 void print(string str) {
     cout << str << endl;
 }
 
 class FlashCard {
+
+// Stores information of each flashcard
 private:
     string question;
     string answer;
     Difficulty difficulty;
 
+
 public:
+    // Default difficult level for a card
     FlashCard() { difficulty = MEDIUM; }  
 
+    // Creates new card by obtaining question & answer
+    // Obtains a question
     void setQuestion() {
         cout << "Add a question: ";
         getline(cin, question);
     }
 
+    // Obtains the corresponding answer
     void setAnswer() {
         cout << "Add the answer: ";
         getline(cin, answer);
     }
 
+    // Used when loading flashcards from the text file.
+    // Loads information of each card
+    // To track user progress later in main function
     void loadCardDetails(string q, string a, Difficulty d) {
         question = q;
         answer = a;
         difficulty = d;
     }
 
+    // Getter functions to return the stored data of each card
     string getQuestion()       { return question; }
     string getAnswer()         { return answer; }
+    // Returns difficulty enum value
+    // Mainly used for sorting (spaced repetition)
     Difficulty getDifficulty() const { return difficulty; }
 
+    // To update the flashcard difficulty after the user gives 
+    // feedback during reviewing a card.
     void setDifficulty(Difficulty d) { difficulty = d; }
 
+    // Converts the enum value into a readable string for display.
     string getDifficultyLabel() {
         if (difficulty == HARD)   return "Hard";
         if (difficulty == MEDIUM) return "Medium";
@@ -52,11 +73,15 @@ public:
 
 class UserProgress {
 private:
-    FlashCard *card;  // Aggregation
+    // Creates flashcard pointer object
+    // Aggregation purpose
+    FlashCard *card;  
 
 public:
+    // Constructor to initialize flashcard object
     UserProgress(FlashCard *c) { card = c; }
 
+    // Function to display user progress
     void progress() {
         cout << "User Progress:" << endl;
         cout << "Question:   " << card->getQuestion() << endl;
