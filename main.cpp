@@ -117,11 +117,8 @@ FlashCard newCard;
 };
 
 
-class File{
-
- class FileManager {
+class FileManager {
 public:
-    
     static void saveToFile(Deck& deck, string filename) {
         ofstream outFile(filename);
 
@@ -131,7 +128,6 @@ public:
         }
 
         vector<FlashCard>& cards = deck.getCards();
-
         for (size_t i = 0; i < cards.size(); i++) {
             outFile << cards[i].getQuestion() << endl;
             outFile << cards[i].getAnswer() << endl;
@@ -143,26 +139,21 @@ public:
     }
 
     static void loadFromFile(Deck& deck, string filename) {
-        ifstream inFile(filename); 
+        ifstream inFile(filename);
 
         if (!inFile) {
             print("No saved file found. Starting with an empty deck.");
             return;
         }
 
-        deck.clearDeck(); 
+        deck.clearDeck();
 
         string qLines, aLines, scoreLines;
-        
-        // Read chunks of 3 lines until the end of the file
         while (getline(inFile, qLines) && getline(inFile, aLines) && getline(inFile, scoreLines)) {
-            // convert the score from a string to an integer
-            int savedScore = stoi(scoreLines); 
+            int savedScore = stoi(scoreLines); // Convert text score to integer
 
             FlashCard loadedCard;
             loadedCard.loadCardDetails(qLines, aLines, savedScore);
-            
-            
             deck.getCards().push_back(loadedCard);
         }
 
@@ -171,11 +162,49 @@ public:
     }
 };
 
-
-};
-
-
 int main() {
+    Deck myDeck;
+    string filename = "flashcards.txt";
+
+    // 1. Load saved cards at startup
+    FileManager::loadFromFile(myDeck, filename);
+
+    int choice = 0;
+
+    // 2. Menu Loop
+    while (choice != 3) {
+        cout << "\n=========================" << endl;
+        cout << "    FLASHCARD PROGRAM    " << endl;
+        cout << "=========================" << endl;
+        cout << "1. Add a New Flashcard" << endl;
+        cout << "2. Play the Quiz" << endl;
+        cout << "3. Save and Exit" << endl;
+        cout << "Enter your choice (1-3): ";
+        cin >> choice;
+
+        cin.ignore(); // Clears the Enter key buffer so getline() works safely
+
+        switch (choice) {
+            case 1:
+                cout << "\n--- Creating a Card ---" << endl;
+                myDeck.addNewCard();
+                break;
+
+            case 2:
+                myDeck.playQuiz();
+                break;
+
+            case 3:
+                cout << "\nSaving your deck..." << endl;
+                FileManager::saveToFile(myDeck, filename);
+                cout << "Goodbye! Good luck with your assignment." << endl;
+                break;
+
+            default:
+                cout << "Invalid selection. Please type 1, 2, or 3." << endl;
+                break;
+        }
+    }
 
     return 0;
 }
