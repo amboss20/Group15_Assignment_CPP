@@ -105,10 +105,10 @@ public:
         }
     }
 
-    void startSession() {
+    void startSession(int current, int total) {
         cout << endl;
         cout << "---------------------------------" << endl;
-        cout << "         REVIEW SESSION          " << endl;
+        cout << "   REVIEW SESSION  [" << current << "/" << total << "]" << endl;
         cout << "---------------------------------" << endl;
 
         showCard();
@@ -135,6 +135,32 @@ public:
 
     void clearDeck() {
         cards.clear();
+    }
+
+    // Composition: Deck fully owns its FlashCards, so removal is managed here
+    void removeCard() {
+        if (cards.empty()) {
+            print("The deck is empty! Nothing to remove.");
+            return;
+        }
+
+        cout << "--- Select a Card to Remove ---" << endl;
+        for (size_t i = 0; i < cards.size(); i++) {
+            cout << i + 1 << ". " << cards[i].getQuestion() << endl;
+        }
+
+        int pick = 0;
+        cout << "Enter card number to remove: ";
+        cin >> pick;
+        cin.ignore();
+
+        if (pick < 1 || pick > (int)cards.size()) {
+            print("Invalid selection. No card removed.");
+            return;
+        }
+
+        cards.erase(cards.begin() + pick - 1);
+        print("Card removed successfully!");
     }
 
     void sortByDifficulty() {
@@ -206,10 +232,11 @@ int main() {
         print("      FLASHCARD CONSOLE          ");
         print("---------------------------------");
         print("1. Add FlashCard");
-        print("2. Review Flashcards");
-        print("3. View Progress");
-        print("4. Save Deck");
-        print("5. Exit");
+        print("2. Remove FlashCard");
+        print("3. Review Flashcards");
+        print("4. View Progress");
+        print("5. Save Deck");
+        print("6. Exit");
         cout << endl;
 
         cout << "Enter your choice (number): ";
@@ -222,6 +249,9 @@ int main() {
             myDeck.addNewCard();
         }
         else if (choice == 2) {
+            myDeck.removeCard();
+        }
+        else if (choice == 3) {
             vector<FlashCard>& cards = myDeck.getCards();
             
             if (cards.empty()) {
@@ -231,11 +261,11 @@ int main() {
 
                 for (size_t i = 0; i < cards.size(); i++) {
                     StudySession session(&cards[i]);
-                    session.startSession();
+                    session.startSession(i + 1, cards.size());
                 }
             }
         }
-        else if (choice == 3) {
+        else if (choice == 4) {
             vector<FlashCard>& cards = myDeck.getCards();
             
             if (cards.empty()) {
@@ -249,16 +279,16 @@ int main() {
                 cin.ignore();
             }
         }
-        else if (choice == 4) {
+        else if (choice == 5) {
             cout << "Saving your deck..." << endl;
             FileManager::saveToFile(myDeck, filename);
         }
-        else if (choice == 5) {
+        else if (choice == 6) {
             print("Goodbye!");
             return 0;
         }
         else {
-            print("Invalid choice. Please select 1-5.");
+            print("Invalid choice. Please select 1-6.");
         }
 
     } while (true);
