@@ -2,14 +2,16 @@
 #include <string>
 using namespace std;
 
+enum Difficulty { HARD = 0, MEDIUM = 1, EASY = 2 };
+
 class FlashCard {
 private:
     string question;
     string answer;
-    int score;
+    Difficulty difficulty;
 
 public:
-    FlashCard() { score = 0; }
+    FlashCard() { difficulty = MEDIUM; }  
 
     void setQuestion() {
         cout << "Add a question: ";
@@ -21,12 +23,17 @@ public:
         getline(cin, answer);
     }
 
-    string getQuestion() { return question; }
-    string getAnswer()   { return answer; }
-    int    getScore()    { return score; }
+    string getQuestion()       { return question; }
+    string getAnswer()         { return answer; }
+    Difficulty getDifficulty() { return difficulty; }
 
-    int increaseScore() { return ++score; }
-    int decreaseScore() { return --score; }
+    void setDifficulty(Difficulty d) { difficulty = d; }
+
+    string getDifficultyLabel() {
+        if (difficulty == HARD)   return "Hard";
+        if (difficulty == MEDIUM) return "Medium";
+        return "Easy";
+    }
 };
 
 class UserProgress {
@@ -37,9 +44,9 @@ public:
     UserProgress(FlashCard *c) { card = c; }
 
     void progress() {
-        cout << "User Progress:" << endl;
-        cout << "Question: " << card->getQuestion() << endl;
-        cout << "Score:    " << card->getScore()    << endl;
+        cout << "User Progress:"                          << endl;
+        cout << "Question:   " << card->getQuestion()    << endl;
+        cout << "Difficulty: " << card->getDifficultyLabel() << endl;
         cout << endl;
     }
 };
@@ -62,30 +69,37 @@ public:
 
     void recordFeedback() {
         int feedback = 0;
-        cout << "Did you get it right?" << endl;
-        cout << "1. Yes (Easy)" << endl;
-        cout << "2. No  (Hard)" << endl;
+        cout << "How difficult was this card?" << endl;
+        cout << "1. Hard   (will appear first next time)"  << endl;
+        cout << "2. Medium (will appear in the middle)"    << endl;
+        cout << "3. Easy   (will appear last next time)"   << endl;
         cout << "Enter choice: ";
         cin >> feedback;
         cin.ignore();
 
         if (feedback == 1) {
-            card->increaseScore();
-            cout << "Great! Score increased to " << card->getScore() << "." << endl;
+            card->setDifficulty(HARD);
+            cout << "Marked as Hard. This card will appear first." << endl;
+        } else if (feedback == 2) {
+            card->setDifficulty(MEDIUM);
+            cout << "Marked as Medium. This card will appear in the middle." << endl;
+        } else if (feedback == 3) {
+            card->setDifficulty(EASY);
+            cout << "Marked as Easy. This card will appear last." << endl;
         } else {
-            card->decreaseScore();
-            cout << "No worries! Score decreased to " << card->getScore() << "." << endl;
+            cout << "Invalid input. Difficulty unchanged." << endl;
         }
     }
 
     void selectNextCard() {
         cout << endl;
-        if (card->getScore() <= 2) {
-            cout << "[Spaced Repetition] Score is low (" << card->getScore()
-                 << ") this card will appear again SOON." << endl;
+        Difficulty d = card->getDifficulty();
+        if (d == HARD) {
+            cout << "[Review Order] Marked HARD so this card appears at the front." << endl;
+        } else if (d == MEDIUM) {
+            cout << "[Review Order] Marked MEDIUM so this card appears in the middle." << endl;
         } else {
-            cout << "[Spaced Repetition] Score is good (" << card->getScore()
-                 << ") this card will appear LATER." << endl;
+            cout << "[Review Order] Marked EASY so this card appears at the back." << endl;
         }
     }
 
@@ -106,9 +120,9 @@ void print(string str) {
 }
 
 int main() {
-    FlashCard c1;
+    FlashCard     c1;
     UserProgress  track  (&c1);
-    StudySession  session(&c1);   // aggregation
+    StudySession  session(&c1);
     int choice = 0;
 
     do {
