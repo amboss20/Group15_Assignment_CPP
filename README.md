@@ -1,6 +1,6 @@
 FLASHCARD APP
 
------------------CONSOLE VERSION---------------------
+CONSOLE VERSION
 Compile:
   g++ flashcards.cpp -o flashcards_console -std=c++17
 
@@ -16,7 +16,7 @@ Menu:
   6. Exit
 
 
------------------GUI VERSION-------------------------
+GUI VERSION
 Open Git Bash in the project folder, then:
 
 Compile:
