@@ -1,6 +1,3 @@
-What pet has whiskers?
-cat
-2
 What is a Class in C++?
 A user-defined blueprint or template used to create objects.
 2
