@@ -2,7 +2,7 @@ FLASHCARD APP
 
 CONSOLE VERSION
 Compile:
-  g++ flashcards.cpp -o flashcards_console -std=c++17
+  g++ flashcards_console.cpp -o console -std=c++17
 
 Run:
   ./flashcards_console
@@ -20,7 +20,7 @@ GUI VERSION
 Open Git Bash in the project folder, then:
 
 Compile:
-  g++ flashcards_gui.cpp -o flashcards $(fltk-config --cxxflags --ldflags) -std=c++17
+  g++ flashcards_gui.cpp -o gui $(fltk-config --cxxflags --ldflags) -std=c++17
 
 Run:
   ./flashcards
