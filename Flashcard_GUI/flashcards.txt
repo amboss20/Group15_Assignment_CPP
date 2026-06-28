@@ -1,0 +1,21 @@
+What is 5x4?
+20
+0
+What is Object-Oriented Programming (OOP)?
+A programming paradigm that organizes code using objects and classes.
+2
+What is a class?
+A blueprint for creating objects.
+2
+What is an object?
+An instance of a class.
+1
+What is an attribute?
+A variable that stores an object's data.
+1
+What is a method?
+A function that belongs to a class.
+1
+What is encapsulation?
+Wrapping data and methods into a single unit (class) and restricting direct access to data.
+1
